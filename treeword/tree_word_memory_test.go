@@ -5,6 +5,7 @@ import(
 	"log"
 	"bufio"
 	"fmt"
+	"time"
 	"runtime"
 	"testing"
 )
@@ -13,41 +14,81 @@ func compareMemorySize(tmp []string, loop int) (int, int) {
 	sizeArrayString := 0
 	sizeTreeWord := 0
 	for i:= 0; i < loop; i++ {
-		test_memory_with_string(tmp)
+		tmp2 := make([]string, 0)
+		for _, s := range tmp {
+			tmp2 = append(tmp2, s)
+		}
 		sizeArrayString += getSizeAlloc()
 		printMemUsage()
 	}
+
 	for i:= 0; i < loop; i++ {
-		test_memory_with_tree_word(tmp)
+		tmp2 := New()
+		tmp2.Inserts(tmp...)
 		sizeTreeWord += getSizeAlloc()
 		printMemUsage()
 	}
 
 	fmt.Println("Average size of ", len(tmp), "names : ")
 	fmt.Println("Array String :", sizeArrayString/loop/1000, "KB")
-	fmt.Println("TreeWord     :", sizeTreeWord/loop/1000, "KB")
+	fmt.Println("TreeWord     :",    sizeTreeWord/loop/1000, "KB")
 
-	return 0, 0
+	return sizeArrayString, sizeTreeWord
 }
 
-func TestTreeword(t *testing.T) {
-	// fmt.Println(len(read_file()))
-
+func Test_Memory_Size(t *testing.T) {
 	loop := 3
 
 	printMemUsage()
 	tmp := read_file()
 	fmt.Println("Readed :", len(tmp), " names")
 
-	compareMemorySize(tmp,loop)
+	arrSize, treewordSize := compareMemorySize(tmp,loop)
 
-	// fmt.Println(len(tmp))
-	t.Log("ok")
-	if false {
-		t.Error(
-			"Not good!",
-		)
+	if arrSize <= treewordSize {
+		t.Error("Not good!")
 	}
+}
+
+func compareTimeInsert(tmp []string, loop int) (int, int) {
+	timeArrayString := 0
+	timeTreeWord := 0
+
+	for i := 0; i < loop; i++ {
+		tmpT := time.Now()
+		tmp2 := make([]string, 0)
+		for _, s := range tmp {
+			tmp2 = append(tmp2, s)
+		}
+		timeArrayString += int(time.Since(tmpT).Nanoseconds())
+	}
+
+	for i := 0; i < loop; i++ {
+		tmpT := time.Now()
+		tmp2 := New()
+		tmp2.Inserts(tmp...)
+		timeTreeWord += int(time.Since(tmpT).Nanoseconds())
+	}
+
+	fmt.Println("Array String :", timeArrayString/1000, " js")
+	fmt.Println("TreeWord     :",    timeTreeWord/1000, " js")
+
+	return 0,0
+}
+
+func Test_Time_Insert(t *testing.T) {
+	loop := 3
+
+	tmp := read_file()
+	compareTimeInsert(tmp, loop)
+
+	t.Log("ok")
+}
+
+
+
+func Test_Time_Get_All(t *testing.T) {
+
 }
 
 func read_file() []string {
@@ -68,32 +109,6 @@ func read_file() []string {
 	}
 	return tmp
 }
-
-func test_memory_with_string(arrStr []string) []string {
-	tmp := make([]string, 0)
-	for _, s := range arrStr {
-		tmp = append(tmp, s)
-	}
-	return tmp
-}
-
-func test_memory_with_tree_word(arrStr []string) *TreeWord {
-	tmp := New()
-	for _, str := range arrStr {
-		tmp.Insert(str)
-	}
-	return tmp
-}
-
-// func main() {
-// 	// fmt.Println(len(read_file()))
-// 	tmp := test_memory_with_string()
-// 	printMemUsage()
-// 	test_memory_with_tree_word(tmp)
-// 	printMemUsage()
-
-// 	fmt.Println(len(tmp))
-// }
 
 var (
 	m runtime.MemStats
