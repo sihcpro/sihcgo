@@ -29,7 +29,7 @@ func Construct(b byte, a int, nl []byte, nc []*TreeWord) *TreeWord {
 	return tmp
 }
 
-func (this *TreeWord) insert(char byte, pos... int) {
+func (this *TreeWord) append(char byte, pos... int) {
 	// fmt.Print(" [", string(this.NextChar), "]")
 	if len(pos) > 0 {
 		p := pos[0]+1
@@ -52,54 +52,29 @@ func (this *TreeWord) insert(char byte, pos... int) {
 }
 
 func (this *TreeWord) Insert(s string) int {
-	// fmt.Println()
-	// fmt.Print("-> ")
 	if len(s) == 0 {
 		this.Amount++
 		return this.Amount
 	}
 	char := s[0]
-	// fmt.Print(" ", string(char))
-	// if this.Char == byte(0) {
-		tmp := search.BinarySearchB(this.NextChar, char)
-		// fmt.Print(" ", tmp, " vs ", len(this.NextChar))
-// 
-		if tmp == -1 {
-			// this.NextChar = append([]byte{char}, this.NextChar...)
-			// var newWord *TreeWord
-			// if len(s) == 1 {
-			// 	// newWord = Construct(char, 1, []byte{}, []*TreeWord{})
-			// 	// this.NextTree = append([]*TreeWord{newWord}, this.NextTree...)
-			// 	this.insert(char, 1)
-			// 	return 1
-			// } else {
-				// newWord = Construct(char, 0, []byte{}, []*TreeWord{})
-				// this.NextTree = append([]*TreeWord{newWord}, this.NextTree...)
-				this.insert(char)
-				return this.NextTree[0].Insert(s[1:])
-			// }
-		} else if this.NextChar[tmp] == char {
-			// this.NextTree[tmp].Amount++
-			return this.NextTree[tmp].Insert(s[1:])
-		} else {
-			// tmpNextChar := append(this.NextChar[:tmp], char)
-			// if tmp < len(this.NextChar) {
-			// 	this.NextChar = append(tmpNextChar, this.NextChar[tmp:]...)
-			// }
-			// if len(s) == 1 {
-			// 	this.insert(char, 1, tmp)
-			// 	return 1
-			// } else {
-				this.insert(char, tmp)
-				return this.NextTree[tmp+1].Insert(s[1:])
-			// }
-		}
+	tmp := search.BinarySearchB(this.NextChar, char)
+	if tmp == -1 {
+		this.append(char)
+		return this.NextTree[0].Insert(s[1:])
+	} else if this.NextChar[tmp] == char {
+		return this.NextTree[tmp].Insert(s[1:])
+	} else {
+		this.append(char, tmp)
+		return this.NextTree[tmp+1].Insert(s[1:])
+	}
 
-		// this.NextTree[]
-	// } else {
-	// 	fmt.Print(" Not yet! ")
-	// }
 	return 0
+}
+
+func (this *TreeWord) Inserts(words... string) {
+	for _, word := range words {
+		this.Insert(word)
+	}
 }
 
 func (this *TreeWord) print(head, tmp string) {
@@ -116,14 +91,14 @@ func (this *TreeWord) print(head, tmp string) {
 			if len(this.NextChar) == 1 {
 				this.NextTree[i].print(head+"    ", tmp2)
 			} else {
-				this.NextTree[i].print(head+"   |", tmp2)
+				this.NextTree[i].print(head+"|   ", tmp2)
 			}
 		} else {
-			fmt.Print(head, "   |")
+			fmt.Print(head, "|  ")
 			fmt.Println()
-			fmt.Print(head, "   ", string(c))
+			fmt.Print(head, "|~~ ", string(c))
 			if i < len(this.NextChar)-1 {
-				this.NextTree[i].print(head+"   |", tmp2)
+				this.NextTree[i].print(head+"|   ", tmp2)
 			} else {
 				this.NextTree[i].print(head+"    ", tmp2)
 			}
@@ -132,13 +107,46 @@ func (this *TreeWord) print(head, tmp string) {
 	}
 }
 
+func (this *TreeWord) all(arr *[]string, tmp string) {
+	tmp2 := tmp+string(this.Char)
+	// if this.Amount > 0 {
+	// 	*arr = append(*arr, tmp2)
+	// }
+	for i := 0; i < this.Amount; i++ {
+		*arr = append(*arr, tmp2)
+	}
+	for _, c := range this.NextTree {
+		c.all( arr, tmp2)
+	}
+}
+
+func (this *TreeWord) All() []string {
+	arr := new([]string)
+	fmt.Printf("%T\n", new([]string))
+	this.all(arr, "")
+	return *arr
+}
+
 func (this *TreeWord) Print() {
+	fmt.Print(" ")
 	this.print("", "")
 }
 
 func (this *TreeWord) helper(s string) {
 	this.Insert(s)
 	// fmt.Print( " : ", s, " >> ", this.Insert(s))
+}
+
+func find(arr *[]string) {
+
+}
+
+func (this *TreeWord) Find(regex string) {
+
+}
+
+func (this *TreeWord) GetTree(char byte) {
+
 }
 
 func main2() {

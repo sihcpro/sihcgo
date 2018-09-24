@@ -2,15 +2,16 @@ package search
 
 import(
 	"testing"
-	"errors"
 )
 
 func TestBinarySearch(t *testing.T) {
-	result, text := BinarySearch(false, dataPath)
+	arr := []int{1, 2, 5, 6}
+	result1 := BinarySearch( arr, 3)
+	result2 := BinarySearch( arr, 2)
 
-	if !result {
-		t.Error(errors.New(text))
+	if result1 == 2 && result2 == 1 {
+		t.Log("Test ok")
 	} else {
-		t.Log("Tested "+text+" files")
+		t.Error("Test BinarySearch failt!")
 	}
 }
