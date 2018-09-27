@@ -36,7 +36,16 @@ func main() {
 	a.Inserts("anh Phuc")
 	a.Inserts("anh Phuc")
 	a.Inserts("annnn")
+	a.Inserts("*asd", "*a", "*ds", "*ass")
 
 	// a.Print()
-	fmt.Println(a.All())
+	// b := treeword.Copy(a)
+
+	// fmt.Println(a.Find("anh Phu"))
+	fmt.Println(a.Find("anh Phuc"))
+	// fmt.Println(a.Find("an*"))
+
+// 	fmt.Println(a.All())
+// 	fmt.Println(b.All())
+	fmt.Println("Done")
 }

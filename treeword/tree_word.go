@@ -107,29 +107,48 @@ func (this *TreeWord) print(head, tmp string) {
 	}
 }
 
-func (this *TreeWord) all(arr *[]string, tmp string) {
+func (this *TreeWord) all(arr *[]string, tmp string, distinct bool) {
 	tmp2 := tmp+string(this.Char)
 	// if this.Amount > 0 {
 	// 	*arr = append(*arr, tmp2)
 	// }
-	for i := 0; i < this.Amount; i++ {
+	if distinct && this.Amount > 0 {
 		*arr = append(*arr, tmp2)
+	} else {
+		for i := 0; i < this.Amount; i++ {
+			*arr = append(*arr, tmp2)
+		}
 	}
 	for _, c := range this.NextTree {
-		c.all( arr, tmp2)
+		c.all( arr, tmp2, distinct)
 	}
 }
 
 func (this *TreeWord) All() []string {
 	arr := new([]string)
-	fmt.Printf("%T\n", new([]string))
-	this.all(arr, "")
+	this.all(arr, "", false)
 	return *arr
 }
+
+func (this *TreeWord) AllDistinct() []string {
+	arr := new([]string)
+	this.all(arr, "", true)
+	return *arr
+}
+
+func (this *TreeWord) AllChild() []string {
+	arr := new([]string)
+	for _, child := range this.NextTree {
+		*arr = append(*arr, child.AllDistinct()...)
+	}
+	return *arr
+}
+
 
 func (this *TreeWord) Print() {
 	fmt.Print(" ")
 	this.print("", "")
+	fmt.Println()
 }
 
 func (this *TreeWord) helper(s string) {
@@ -137,16 +156,111 @@ func (this *TreeWord) helper(s string) {
 	// fmt.Print( " : ", s, " >> ", this.Insert(s))
 }
 
-func find(arr *[]string) {
-
+func PrintString(arrString []string) {
+	fmt.Print("[")
+	for i, s := range arrString {
+		// fmt.Print("\"",s,"\"")
+		fmt.Print(s)
+		if i < len(arrString)-1 {
+			fmt.Print(";")
+		}
+	}
+	fmt.Print("]\n")
 }
 
-func (this *TreeWord) Find(regex string) {
+func (this *TreeWord) find(findPrev *TreeWord, arrResult *[]string, tmpStr string) {
+	findAll, ok := findPrev.GetTree('*')
+	// find := Copy(findPrev)
+	var allNextFind []string
+	if ok {
+		allNextFind = findAll.AllDistinct()
+		reg2 := New()
+		reg2.Inserts(allNextFind...)
+		reg2.Print()
+		reg2.Inserts(findAll.AllChild()...)
+		reg2.Print()
+		allNextFind = reg2.AllDistinct()
+	}
 
+	// tmp := find.AllDistinct()
+	// for _, findString := range tmp {
+	// 	if len(findString) > 1 {
+	// 		nextFind := findString[1:]
+	// 		num := find.Insert(nextFind)
+	// 		if num == 1 {
+	// 			// firstInsert
+	// 			// this.GetTree
+	// 		}
+	// 	}
+	// }
+
+	fmt.Println("len = ", len(this.NextChar))
+
+	tT, tF := &(this.NextChar), &(findPrev.NextChar)
+	lT, lF := len(*tT), len(*tF)
+	fmt.Print("Find")
+	PrintString(findPrev.AllChild())
+	fmt.Println("In  ")
+	PrintString(this.AllChild())
+
+	for cT, cF := 0, 0; cT < lT && cF < lF; {
+		fmt.Print(cT, "/", lT, " & ", cF, "/", lF, " ", (*tT)[cT], (*tF)[cF],
+			" '", string((*tT)[cT]), "' '",string((*tF)[cF]), "'\n")
+		tmpNextStr := tmpStr + string(this.Char)
+		if (*tF)[cF] == '*' {
+			if findPrev.NextTree[cF].Amount > 0 && this.NextTree[cT].Amount > 0 {
+				*arrResult = append(*arrResult, tmpNextStr + string(this.NextTree[cT].Char))
+			}
+			cF++
+			continue
+		}
+
+		if (*tT)[cT] == (*tF)[cF] {
+
+			if this.NextTree[cT].Amount > 0 && findPrev.NextTree[cF].Amount > 0 {
+				*arrResult = append(*arrResult, tmpNextStr + string(this.NextTree[cT].Char))
+			}
+
+			nextFindTree := New()
+			nextFindTree.Inserts(allNextFind...)
+			nextFindTree.Inserts((findPrev.NextTree[cF]).AllChild()...)
+			nextFindTree.Print()
+			this.NextTree[cT].Print()
+			this.NextTree[cT].find(nextFindTree, arrResult, tmpNextStr)
+			cT++
+			cF++
+		} else if (*tT)[cT] > (*tF)[cF] {
+			cF++
+		} else {
+			// this.NextTree[cT].find()
+			cT++
+		}
+		fmt.Print(cT, "/", lT, " & ", cF, "/", lF, "\n")
+	}
 }
 
-func (this *TreeWord) GetTree(char byte) {
+func (this *TreeWord) Find(regex string) []string {
+	findTree := New()
+	arrResult := new([]string)
+	findTree.Insert(regex)
+	// findTree.Insert("abx")
+	this.find(findTree, arrResult, "")
+	return *arrResult
+}
 
+func (this *TreeWord) GetTree(char byte) (*TreeWord, bool) {
+	pos := search.BinarySearchB(this.NextChar, char)
+	if pos  == -1 {
+		return New(), false
+	} else {
+		return this.NextTree[pos], true
+	}
+}
+
+func Copy(tree *TreeWord) *TreeWord {
+	newTree := New()
+	newTree.Inserts(tree.All()...)
+	return newTree
 }
 
 func main2() {
